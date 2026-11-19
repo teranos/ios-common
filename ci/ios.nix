@@ -66,9 +66,14 @@ in
     {
       id = "rust";
       uses = "dtolnay/rust-toolchain@stable";
+      # llvm-tools: on Xcode 27 SwiftPM keeps a package's @_cdecl exports
+      # local, and swift-rs (1.0.8 on) makes them global again with
+      # llvm-objcopy, from here. Without it swift-rs only warns, which Cargo
+      # hides for a dependency, and Tauri's every Swift entry is undefined at
+      # link (swift-rs #83; laye #13 and QNTX-App #40 on Xcode 27.2).
       "with" = {
         targets = builtins.concatStringsSep "," ([ "aarch64-apple-ios" ] ++ targets);
-        components = "clippy";
+        components = "clippy,llvm-tools";
       };
     }
     # What was compiled is kept per Xcode: a build script's output names the

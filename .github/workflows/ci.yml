@@ -9,7 +9,7 @@
         {
           "uses": "dtolnay/rust-toolchain@stable",
           "with": {
-            "components": "clippy",
+            "components": "clippy,llvm-tools",
             "targets": "aarch64-apple-ios"
           }
         },
