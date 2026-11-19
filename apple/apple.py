@@ -84,7 +84,7 @@ def its_capabilities(bundle, identifier, wanted):
     """Every capability wanted is on, and every one Apple holds is printed,
     named as Apple names it."""
     held = {c["attributes"]["capabilityType"]
-            for c in get(f"/bundleIds/{bundle}/bundleIdCapabilities", limit=200)["data"]}
+            for c in get(f"/bundleIds/{bundle}/bundleIdCapabilities")["data"]}
     print(" ", identifier, "holds:", " ".join(sorted(held)) or "nothing")
     for capability in wanted:
         if isinstance(capability, str):
