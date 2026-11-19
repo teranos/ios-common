@@ -71,14 +71,18 @@ in
         components = "clippy";
       };
     }
+    # What was compiled is kept per Xcode: a build script's output names the
+    # Xcode it ran under, and one restored from another links against paths
+    # that are not there (laye #13: the sheet's Swift was looked for under
+    # Xcode_26.6.app on the Xcode 27.2 image, and _init_sheet was undefined).
     {
       uses = "actions/cache@v4";
       "with" = {
         path = builtins.concatStringsSep "\n" cache.path;
-        key = "ios-\${{ steps.rust.outputs.cachekey }}-\${{ hashFiles(${
+        key = "ios-xcode-${xcode}-\${{ steps.rust.outputs.cachekey }}-\${{ hashFiles(${
           builtins.concatStringsSep ", " (map (f: "'${f}'") cache.key)
         }) }}";
-        restore-keys = "ios-\${{ steps.rust.outputs.cachekey }}-";
+        restore-keys = "ios-xcode-${xcode}-\${{ steps.rust.outputs.cachekey }}-";
       };
     }
     {
