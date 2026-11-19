@@ -17,8 +17,10 @@ itself and ".island" its extension. A capability is its capabilityType, or
     {"profile": "laye",
      "ids": {"": ["PUSH_NOTIFICATIONS", "APP_ATTEST"], ".island": []}}
 
-The profile is written to OUT, as Apple wrote it. It is no secret: it ships
-inside every build.
+The app's profile is written to OUT/app.mobileprovision, as Apple wrote it,
+and with an island in APPLE_JSON the island's, by the name it gives, to
+OUT/island.mobileprovision (island/README.md). A profile is no secret: it
+ships inside every build.
 
 Reads APPLE_API_KEY, APPLE_API_ISSUER, APPLE_API_KEY_CONTENT, IOS_CERTIFICATE
 and IOS_CERTIFICATE_PASSWORD from the environment.
@@ -158,15 +160,24 @@ def main(config_path, out):
     config = json.load(open(config_path))
     if "" not in config["ids"]:
         sys.exit(f'{config_path} names no "" App ID, the app itself')
+    island = config.get("island")
+    if island and ".island" not in config["ids"]:
+        sys.exit(f'{config_path} names an island and no ".island" App ID for it')
     bundles = {}
     for key, wanted in config["ids"].items():
         identifier = conf["identifier"] + key
         bundles[key] = the_app_id(identifier, (conf["productName"] + " " + key.lstrip(".")).strip())
         its_capabilities(bundles[key], identifier, wanted)
-    content = the_profile(config["profile"], bundles[""], the_certificate())
-    with open(out, "wb") as f:
-        f.write(base64.b64decode(content))
-    print("written:", out)
+    certificate = the_certificate()
+    os.makedirs(out, exist_ok=True)
+    made = {"app": the_profile(config["profile"], bundles[""], certificate)}
+    if island:
+        made["island"] = the_profile(island["profile"], bundles[".island"], certificate)
+    for name, content in made.items():
+        at = os.path.join(out, name + ".mobileprovision")
+        with open(at, "wb") as f:
+            f.write(base64.b64decode(content))
+        print("written:", at)
 
 
 if __name__ == "__main__":

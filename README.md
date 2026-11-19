@@ -13,8 +13,9 @@ What the iOS apps share: QNTX-App, laye, and any other.
 | `apple/ios-project.py` | Signing against that profile instead of an account, in the generated Xcode project. |
 | `apple/upload.sh` | An IPA to App Store Connect. |
 | `apple/delivered.py` | Waits until App Store Connect says testers can install a build. |
-
-The island comes here next, from QNTX-App's `island/`.
+| `apple/export-island.py` | The archive exported with the app's profile and the island's. |
+| `island/` | What waits on a person, as a Live Activity: `island/README.md`. |
+| `ci/ios.nix` | The iOS job every app follows. |
 
 ## Taking it in
 
@@ -38,7 +39,8 @@ What the app passes:
 | `cache` | `path`, what is cached, and `key`, the files it is keyed on. |
 | `prepare` | The steps that make the app's page, before the lib is checked. |
 | `project` | Steps after the project is signed, before xcodegen. |
-| `build` | The command that leaves an IPA under `gen/`. |
+| `island` | `node` and `sentry`, when `apple.json` names an island. |
+| `build` | The command that leaves an IPA under `gen/`; with an island, the archive exported by `apple/export-island.py`. |
 | `env` | What every step is given. |
 
 `apple.py` reads the app's `apple.json`: the profile's name and, per App ID,

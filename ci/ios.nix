@@ -17,7 +17,15 @@
   },
   prepare ? [ ],
   project ? [ ],
-  build ? "cargo tauri ios build --export-method app-store-connect --build-number \${{ github.run_number }}",
+  island ? null,
+  build ?
+    if island == null then
+      "cargo tauri ios build --export-method app-store-connect --build-number \${{ github.run_number }}"
+    else
+      ''
+        cargo tauri ios build --archive-only --build-number ''${{ github.run_number }}
+        python3 "$IOS_COMMON/export-island.py"
+      '',
   env ? { },
 }:
 let
@@ -97,8 +105,11 @@ in
       run = ''
         python3 -m venv "$RUNNER_TEMP/asc"
         "$RUNNER_TEMP/asc/bin/pip" install --quiet 'pyjwt[crypto]' requests
-        "$RUNNER_TEMP/asc/bin/python" "$IOS_COMMON/apple.py" apple.json "$RUNNER_TEMP/app.mobileprovision"
-        echo "IOS_MOBILE_PROVISION=$(base64 < "$RUNNER_TEMP/app.mobileprovision" | tr -d '\n')" >> "$GITHUB_ENV"
+        "$RUNNER_TEMP/asc/bin/python" "$IOS_COMMON/apple.py" apple.json "$RUNNER_TEMP/profiles"
+        echo "IOS_MOBILE_PROVISION=$(base64 < "$RUNNER_TEMP/profiles/app.mobileprovision" | tr -d '\n')" >> "$GITHUB_ENV"
+        if [ -f "$RUNNER_TEMP/profiles/island.mobileprovision" ]; then
+          echo "IOS_ISLAND_MOBILE_PROVISION=$(base64 < "$RUNNER_TEMP/profiles/island.mobileprovision" | tr -d '\n')" >> "$GITHUB_ENV"
+        fi
       '';
     }
     # The release binary, not a six-minute compile of the CLI on every run.
@@ -121,13 +132,26 @@ in
     {
       name = "Sign against the profile, not an account";
       "if" = held;
-      env = team // {
-        PROVISIONING_PROFILE = profile;
-      };
+      env =
+        team
+        // {
+          PROVISIONING_PROFILE = profile;
+        }
+        // (
+          if island == null then
+            { }
+          else
+            {
+              ISLAND = "\${{ runner.temp }}/ios-common/island";
+              ISLAND_NODE = island.node;
+              ISLAND_SENTRY_DSN = island.sentry;
+            }
+        );
       run = ''python3 "$IOS_COMMON/ios-project.py" gen/apple/project.yml'';
     }
   ]
-  ++ map (s: s // { "if" = held; }) project
+  # A step of the app's own runs where the app is signed, and where it says.
+  ++ map (s: s // { "if" = if s ? "if" then "${held} && (${s."if"})" else held; }) project
   ++ [
     {
       name = "Generate the signed Xcode project";

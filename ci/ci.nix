@@ -34,13 +34,20 @@
           '';
         }
         {
-          name = "The template evaluates";
-          run = ''nix eval --impure --json --expr 'import ./ci/ios.nix { tag = "v0"; profile = "p"; }' > /dev/null'';
+          name = "The template evaluates, with an island and without";
+          run = ''
+            nix eval --impure --json --expr 'import ./ci/ios.nix { tag = "v0"; profile = "p"; }' > /dev/null
+            nix eval --impure --json --expr 'import ./ci/ios.nix { tag = "v0"; profile = "p"; island = { node = "https://n"; sentry = "https://s"; }; }' > /dev/null
+          '';
         }
         {
           name = "Every workflow is what its nix says";
+          # ci/ios.nix is the template, a function, and no workflow of this repo's.
           run = ''
-            nix eval --json --file ci/ci.nix | jq . | diff - .github/workflows/ci.yml
+            for f in ci/*.nix; do
+              [ "$f" = ci/ios.nix ] && continue
+              nix eval --json --file "$f" | jq . | diff - ".github/workflows/$(basename "$f" .nix).yml"
+            done
           '';
         }
       ];

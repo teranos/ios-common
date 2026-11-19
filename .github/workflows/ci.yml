@@ -26,12 +26,12 @@
           "run": "python3 -m py_compile apple/*.py\nsh -n apple/upload.sh\n"
         },
         {
-          "name": "The template evaluates",
-          "run": "nix eval --impure --json --expr 'import ./ci/ios.nix { tag = \"v0\"; profile = \"p\"; }' > /dev/null"
+          "name": "The template evaluates, with an island and without",
+          "run": "nix eval --impure --json --expr 'import ./ci/ios.nix { tag = \"v0\"; profile = \"p\"; }' > /dev/null\nnix eval --impure --json --expr 'import ./ci/ios.nix { tag = \"v0\"; profile = \"p\"; island = { node = \"https://n\"; sentry = \"https://s\"; }; }' > /dev/null\n"
         },
         {
           "name": "Every workflow is what its nix says",
-          "run": "nix eval --json --file ci/ci.nix | jq . | diff - .github/workflows/ci.yml\n"
+          "run": "for f in ci/*.nix; do\n  [ \"$f\" = ci/ios.nix ] && continue\n  nix eval --json --file \"$f\" | jq . | diff - \".github/workflows/$(basename \"$f\" .nix).yml\"\ndone\n"
         }
       ]
     }
