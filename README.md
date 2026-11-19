@@ -42,6 +42,7 @@ What the app passes:
 | `island` | `node` and `sentry`, when `apple.json` names an island. |
 | `build` | The command that leaves an IPA under `gen/`; with an island, the archive exported by `apple/export-island.py`. |
 | `env` | What every step is given. |
+| `xcode` | The Xcode the IPA is built with, on GitHub's `xcode-27` image; 27.2 unless said. |
 
 `apple.py` reads the app's `apple.json`: the profile's name and, per App ID,
 its capabilities. Its docstring has the shape.

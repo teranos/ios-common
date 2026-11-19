@@ -27,6 +27,10 @@
         python3 "$IOS_COMMON/export-island.py"
       '',
   env ? { },
+  # ITMS-90725: from April 2027 an upload is built with the iOS 27 SDK, which
+  # Xcode 27 carries. GitHub's xcode-27 image holds it (actions/runner-images
+  # images/macos/xcode-27-arm64-Readme.md).
+  xcode ? "27.2",
 }:
 let
   held = "steps.signing.outputs.held == 'true'";
@@ -44,11 +48,21 @@ let
   team.APPLE_DEVELOPMENT_TEAM = "\${{ secrets.APPLE_DEVELOPMENT_TEAM }}";
 in
 {
-  runs-on = "macos-latest";
+  runs-on = "xcode-27";
   defaults.run.working-directory = dir;
   inherit env;
   steps = [
     { uses = "actions/checkout@v5"; }
+    # The Xcode an upload is built with is said here, and the SDK it carries
+    # is printed: what App Store Connect reads of the build is this.
+    {
+      name = "Xcode ${xcode}";
+      run = ''
+        sudo xcode-select -s /Applications/Xcode_${xcode}.app
+        xcodebuild -version
+        xcrun --sdk iphoneos --show-sdk-version
+      '';
+    }
     {
       id = "rust";
       uses = "dtolnay/rust-toolchain@stable";
