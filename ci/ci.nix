@@ -17,7 +17,7 @@
           uses = "dtolnay/rust-toolchain@stable";
           "with" = {
             targets = "aarch64-apple-ios";
-            components = "clippy";
+            components = "clippy,llvm-tools";
           };
         }
         { uses = "cachix/install-nix-action@v31"; }
