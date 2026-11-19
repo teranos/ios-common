@@ -24,9 +24,22 @@ An app names one tag of this repo, in its Cargo.toml:
 sheet = { git = "https://github.com/teranos/ios-common", tag = "v0.1.0" }
 ```
 
-Its CI checks out the same tag and runs `apple/` from the app's directory, the
-one holding `tauri.conf.json`; laye's `.github/workflows/app.yml` reads the tag
-from `app/Cargo.toml`.
+Its CI is the job `ci/ios.nix` makes, imported at that same tag by the app's
+own `ci/*.nix`, which emits the app's workflow as every workflow here is
+emitted: `nix eval --json --file ci/<name>.nix | jq .`, never edited by hand.
+What the app passes:
+
+| Argument | What it is |
+|---|---|
+| `dir` | The directory holding `tauri.conf.json`, `apple.json` and `Cargo.toml`. |
+| `tag` | The ios-common tag the job runs `apple/` from. |
+| `profile` | The App Store profile's name, `apple.json`'s. |
+| `targets` | Rust targets beyond `aarch64-apple-ios`. |
+| `cache` | `path`, what is cached, and `key`, the files it is keyed on. |
+| `prepare` | The steps that make the app's page, before the lib is checked. |
+| `project` | Steps after the project is signed, before xcodegen. |
+| `build` | The command that leaves an IPA under `gen/`. |
+| `env` | What every step is given. |
 
 `apple.py` reads the app's `apple.json`: the profile's name and, per App ID,
 its capabilities. Its docstring has the shape.

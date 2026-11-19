@@ -1,23 +1,44 @@
-# The sheet builds for a phone with every warning denied, and the scripts parse.
-name: ci
-
-on:
-  push:
-  pull_request:
-
-jobs:
-  sheet:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios
-          components: clippy
-      - name: The sheet answers for every warning
-        working-directory: sheet
-        run: cargo clippy --target aarch64-apple-ios -- -D warnings
-      - name: The scripts parse
-        run: |
-          python3 -m py_compile apple/*.py
-          sh -n apple/upload.sh
+{
+  "jobs": {
+    "sheet": {
+      "runs-on": "macos-latest",
+      "steps": [
+        {
+          "uses": "actions/checkout@v5"
+        },
+        {
+          "uses": "dtolnay/rust-toolchain@stable",
+          "with": {
+            "components": "clippy",
+            "targets": "aarch64-apple-ios"
+          }
+        },
+        {
+          "uses": "cachix/install-nix-action@v31"
+        },
+        {
+          "name": "The sheet answers for every warning",
+          "run": "cargo clippy --target aarch64-apple-ios -- -D warnings",
+          "working-directory": "sheet"
+        },
+        {
+          "name": "The scripts parse",
+          "run": "python3 -m py_compile apple/*.py\nsh -n apple/upload.sh\n"
+        },
+        {
+          "name": "The template evaluates",
+          "run": "nix eval --impure --json --expr 'import ./ci/ios.nix { tag = \"v0\"; profile = \"p\"; }' > /dev/null"
+        },
+        {
+          "name": "Every workflow is what its nix says",
+          "run": "nix eval --json --file ci/ci.nix | jq . | diff - .github/workflows/ci.yml\n"
+        }
+      ]
+    }
+  },
+  "name": "ci",
+  "on": {
+    "pull_request": {},
+    "push": {}
+  }
+}
