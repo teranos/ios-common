@@ -30,6 +30,7 @@ class Sheet: Plugin {
     scroll.minimumZoomScale = 1
     scroll.maximumZoomScale = 1
     scroll.bouncesZoom = false
+    withoutAccessoryBar(webview)
   }
 
   @objc public func run(_ invoke: Invoke) throws {
@@ -62,6 +63,30 @@ class Sheet: Plugin {
       }
     }
   }
+}
+
+// WKWebView puts a bar over the keyboard while a field on the page has it:
+// ^ and ∨ to the previous and next field, ✓ to close the keyboard. A native
+// field has none. No setting turns it off: the view the page is drawn in is
+// asked for its `inputAccessoryView`, and here that view is given a class of
+// its own that answers nil.
+private func withoutAccessoryBar(_ webview: WKWebView) {
+  guard let content = webview.scrollView.subviews.first(where: {
+    NSStringFromClass(type(of: $0)).hasPrefix("WKContent")
+  }) else { return }
+  let original: AnyClass = type(of: content)
+  let name = NSStringFromClass(original) + "WithoutAccessoryBar"
+  if let made = NSClassFromString(name) {
+    object_setClass(content, made)
+    return
+  }
+  let selector = #selector(getter: UIResponder.inputAccessoryView)
+  guard let method = class_getInstanceMethod(UIResponder.self, selector),
+        let made = objc_allocateClassPair(original, name, 0) else { return }
+  let none: @convention(block) (AnyObject) -> UIView? = { _ in nil }
+  class_addMethod(made, selector, imp_implementationWithBlock(none), method_getTypeEncoding(method))
+  objc_registerClassPair(made)
+  object_setClass(content, made)
 }
 
 // Where the sheet is presented: the window the App is showing.
