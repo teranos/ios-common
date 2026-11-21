@@ -137,10 +137,10 @@ in
     }
     # The release binary, not a six-minute compile of the CLI on every run.
     {
-      name = "Fetch tauri-cli 2.11.4";
+      name = "Fetch tauri-cli 2.12.6";
       "if" = held;
       run = ''
-        curl -sSL -o cargo-tauri.zip https://github.com/tauri-apps/tauri/releases/download/tauri-cli-v2.11.4/cargo-tauri-aarch64-apple-darwin.zip
+        curl -sSL -o cargo-tauri.zip https://github.com/tauri-apps/tauri/releases/download/tauri-cli-v2.12.6/cargo-tauri-aarch64-apple-darwin.zip
         mkdir -p "$HOME/.cargo/bin"
         unzip -o -q cargo-tauri.zip -d "$HOME/.cargo/bin"
         rm cargo-tauri.zip
