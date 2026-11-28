@@ -24,8 +24,10 @@ enum Island {
     Bundle.main.object(forInfoDictionaryKey: key) as? String
   }
 
-  private static let turn = NSLock()
-  private static var made = 0
+  // "each adding things only they can now"
+  // 「[Fable 5.2] The island, as the layer that makes and receives Errors. The id, the」
+  // 「[Fable 5.2] time, the source and the calling line are sacred-error's to say.」
+  private static let here = Origin("island")
   // Touched on the main thread only.
   private static var started = false
 
@@ -61,13 +63,24 @@ enum Island {
     _ title: String, _ why: String, region: String, severity: Severity = .error, raw: String? = nil,
     file: String = #fileID, line: Int = #line
   ) -> SacredError {
-    turn.lock()
-    made += 1
-    let id = "err-island-\(made)"
-    turn.unlock()
-    let error = SacredError(
-      id: id, severity: severity, context: Context(surface: "island", region: region), title: title, why: why,
-      raw: raw, at: ISO8601DateFormatter().string(from: Date()), source: "swift", location: "\(file):\(line)")
+    let error = here.make(
+      What(severity: severity, context: Context(surface: "island", region: region), title: title, why: why, raw: raw),
+      file: file, line: line)
+    send(error)
+    return error
+  }
+
+  // "it means threaded through"
+  // "each step in the thread should only say their thing, nothing more"
+  /// 「[Fable 5.2] What another layer answered when it did not do what was asked: its Error」
+  /// 「[Fable 5.2] as it made it, passed on with the island's one line, and sent. An answer」
+  /// 「[Fable 5.2] that is no Error is the island's finding, with the answer whole as its raw.」
+  /// 「[Fable 5.2] This is every hop: receive, pass, show.」
+  @discardableResult
+  static func received(
+    _ asked: String, _ answered: Data, hop: String, file: String = #fileID, line: Int = #line
+  ) -> SacredError {
+    let error = here.receive(asked, answered, file: file, line: line).pass(hop)
     send(error)
     return error
   }

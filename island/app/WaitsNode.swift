@@ -366,8 +366,6 @@ func waitsNodeIsAsked(_ path: String, _ sent: [String: Any]) async throws {
     }
   }
   guard (200..<300).contains(status) else {
-    throw Island.failed(
-      "the node did not do what was pressed", "\(path) answered \(status)", region: "node",
-      raw: String(decoding: said.prefix(2000), as: UTF8.self))
+    throw Island.received("the node \(path)", said, hop: "the app pressed \(path) and was answered \(status)")
   }
 }
