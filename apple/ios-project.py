@@ -92,7 +92,7 @@ ISLAND_PACKAGES = """packages:
     exactVersion: 9.32.0
   SacredError:
     url: https://github.com/teranos/sacred-error
-    revision: 7afcdfd0c060669ad7032f07467f61761a7fac39
+    revision: d8834c0089eb56c6ad0aae78b1d0406a2ca7011a
 """
 
 
