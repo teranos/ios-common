@@ -20,9 +20,9 @@ import WidgetKit
 private let mark = Island.said("IslandMark") ?? "•"
 private let name = Island.said("IslandName") ?? ""
 
-// IslandMark as it is drawn: the system's own symbol where it names one
-// (circle.hexagongrid), and as text where it is a character (•). A symbol's
-// name drawn as text is its name in letters, wrapped across the island.
+// 「[Opus 5.5] IslandMark as it is drawn: the system's own symbol where it names one」
+// 「[Opus 5.5] (circle.hexagongrid), and as text where it is a character (•). A symbol's」
+// 「[Opus 5.5] name drawn as text is its name in letters, wrapped across the island.」
 private let markDrawn: Text =
   UIImage(systemName: mark) != nil ? Text(Image(systemName: mark)) : Text(mark)
 private let accent = hex(Island.said("IslandAccent"))
