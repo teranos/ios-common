@@ -1,6 +1,7 @@
 import ActivityKit
 import AppIntents
 import SwiftUI
+import UIKit
 import WidgetKit
 
 // "the magic island"
@@ -18,6 +19,12 @@ import WidgetKit
 
 private let mark = Island.said("IslandMark") ?? "•"
 private let name = Island.said("IslandName") ?? ""
+
+// IslandMark as it is drawn: the system's own symbol where it names one
+// (circle.hexagongrid), and as text where it is a character (•). A symbol's
+// name drawn as text is its name in letters, wrapped across the island.
+private let markDrawn: Text =
+  UIImage(systemName: mark) != nil ? Text(Image(systemName: mark)) : Text(mark)
 private let accent = hex(Island.said("IslandAccent"))
 
 // IslandAccent as a colour. One that is no colour is the island's failure,
@@ -119,7 +126,7 @@ struct WaitsLiveActivity: Widget {
       // The lock screen.
       VStack(alignment: .leading, spacing: 10) {
         HStack {
-          Text("\(mark) \(name) · \(context.attributes.kind)").font(mono).foregroundColor(onDarkTertiary)
+          (markDrawn + Text(" \(name) · \(context.attributes.kind)")).font(mono).foregroundColor(onDarkTertiary)
           Spacer()
           TimeLeft(due: context.state.due, size: 13)
         }
@@ -143,7 +150,7 @@ struct WaitsLiveActivity: Widget {
     } dynamicIsland: { context in
       DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          Text(mark).font(.system(size: 16, design: .monospaced)).foregroundColor(accent)
+          markDrawn.font(.system(size: 16, design: .monospaced)).foregroundColor(accent)
         }
         DynamicIslandExpandedRegion(.trailing) {
           TimeLeft(due: context.state.due, size: 15)
@@ -166,7 +173,7 @@ struct WaitsLiveActivity: Widget {
           }
         }
       } compactLeading: {
-        Text(mark).font(.system(size: 14, design: .monospaced)).foregroundColor(accent)
+        markDrawn.font(.system(size: 14, design: .monospaced)).foregroundColor(accent)
       } compactTrailing: {
         // Hours, minutes and seconds in the compact island: drawn whole, and smaller where it would be cut.
         TimeLeft(due: context.state.due, size: 13)
@@ -174,7 +181,7 @@ struct WaitsLiveActivity: Widget {
           .minimumScaleFactor(0.75)
           .frame(maxWidth: 64)
       } minimal: {
-        Text(mark).font(.system(size: 13, design: .monospaced)).foregroundColor(accent)
+        markDrawn.font(.system(size: 13, design: .monospaced)).foregroundColor(accent)
       }
     }
   }

@@ -31,7 +31,7 @@ both Info.plists:
 | `session` | `IslandSession` | The key the app's page keeps its session under. |
 | `agent` | `IslandAgent` | How the island names itself to the node, which the node's log is searched by. |
 | `release` | `IslandRelease` | The Sentry release, before `@` and the build. |
-| `mark` | `IslandMark` | The mark drawn on the island. |
+| `mark` | `IslandMark` | The mark drawn on the island: an SF Symbol's name, drawn as the symbol, or a character, drawn as text. |
 | `name` | `IslandName` | The name drawn beside it on the lock screen. |
 | `accent` | `IslandAccent` | The accent, six hex digits. |
 
